@@ -22,13 +22,11 @@ void charger_init(void)
 
 void charger_enable(void)
 {
-    digitalWrite(CHARGER_EN_PIN, HIGH); //Включаем зарядку
     state = CHARGER_ON;
 }
 
 void charger_disable(void)
 {
-    digitalWrite(CHARGER_EN_PIN, LOW);
     state = CHARGER_OFF;
 }
 
