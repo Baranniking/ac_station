@@ -1,18 +1,18 @@
-#include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+#include <Arduino.h>
+#include "ui.h"
+
+
+    bool step = false;
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+ displayBegin();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+if(!step){
+    drawVoltageValue(TFT_WHITE, TFT_BLACK, TFT_RED, 14.0, 15.0, 200.0);
+    step = true;
+}
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
-}

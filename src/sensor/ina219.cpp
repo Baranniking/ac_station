@@ -15,7 +15,7 @@ if(!ina219.begin()){
     fault = true;
     return false;
 }
-ina219.setCalibration_16V_100A();
+ina219.setCalibration_16V_400mA();
     fault = false;
     return true;
 }
