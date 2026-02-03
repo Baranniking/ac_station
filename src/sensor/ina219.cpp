@@ -12,20 +12,31 @@ bool ina219_init(void)
 {
 Wire.begin();
 if(!ina219.begin()){
+    fault = true;
     return false;
 }
-ina219.setCalibraion_16V_100A();
+ina219.setCalibration_16V_100A();
+    fault = false;
+    return true;
 }
 
 void ina219_update(void)
 {
-    voltage = ina219_get_voltage();
-    current = ina219_get_current();
-    power = ina219_get_power();
+ if (!ina219.success()) {
+        fault = true;
+        return;
+    }
+
+    voltage = ina219.getBusVoltage_V();
+    current = ina219.getCurrent_mA();
+    power = ina219.getPower_mW();
+
+    fault = false;
 }
 
 float ina219_get_voltage(void)
 {
+    
     return voltage;
 }
 

@@ -1,95 +1,94 @@
-#include <Arduino.h>
 #include "charger.h"
+#include <Arduino.h>
 #include "config.h"
+#include "ina219.h"
 
 //внутренее состояние, не видно из вне.
 static charger_state state = CHARGER_OFF;
 
 
-//вводные данные для зарядки
-static float battery_voltage = 13.2;
-static uint8_t charger_current = 30;
-static uint8_t battery_temp = 25;
+
+charger_state charger_get_state(void)
+{
+    return state;
+}
+
+void charger_set_state(charger_state newState)
+{
+state = newState;
+}
+
 
 // публичные функции 
 
 void charger_init(void)
 {
-    pinMode(CHARGER_EN_PIN, OUTPUT); //Пин на выход
-    digitalWrite(CHARGER_EN_PIN, LOW); // пин опущен
+    pinMode(CHARGER_EN_PIN, OUTPUT); 
+    digitalWrite(CHARGER_EN_PIN, LOW); 
     state = CHARGER_OFF;
 }
 
 void charger_enable(void)
 {
-    state = CHARGER_ON;
+    digitalWrite(CHARGER_EN_PIN, HIGH);
 }
 
 void charger_disable(void)
 {
-    state = CHARGER_OFF;
+    digitalWrite(CHARGER_EN_PIN, LOW);
 }
 
-void charger_au(void){
-    // логика работы в авто режиме
-    state  = CHARGER_AUTO;
-}
-
-charger_state charger_get_state(void){
-    return state;
-}
-
-    // логика зарядки
-void charger_logical(void)
+void charger_au(void)
 {
-    switch(state)
+      
+      float v = ina219_get_voltage();
+      float i = ina219_get_current();
+
+    if(v <= VOLTAGE_START_CHARGE){
+            charger_enable();
+        }
+        if(v >= CHARGE_VOLTAGE_MAX){
+            charger_disable();
+            state = CHARGER_DONE; 
+        }
+}
+
+void charger_fault(void){
+    digitalWrite(CHARGER_EN_PIN, LOW);
+    //ошибку на дисплей
+
+}
+
+    //////////////////////////////////////////////////////////////////////// логика зарядки
+    void charger_logical(void)
+{
+      switch(state)
     {
-        case CHARGER_OFF:
-        digitalWrite(CHARGER_EN_PIN, LOW);
-        
-        break;
-
-        case CHARGER_CHECK:
-            if(battery_voltage >= CHARGE_VOLTAGE_MAX){
-                state = CHARGER_DONE;
-                break;
-            }
-            if(battery_temp >= BATTERY_TEMP_MAX){
-                state = CHARGER_FAULT;
-                break;
-            }
-            break;
-        
-        case CHARGER_DONE:
-        digitalWrite(CHARGER_EN_PIN, LOW);
-        // оповищение на дисплей
-        break;
-        
-        case CHARGER_FAULT:
-        digitalWrite(CHARGER_EN_PIN, LOW);
-        
-        //ошибку на дисплей
-        break;
-
+        ina219_update();
         case CHARGER_ON:
-        digitalWrite(CHARGER_EN_PIN, HIGH);
-       
+        charger_enable();
+        break;
+
+        case CHARGER_OFF:
+        charger_disable();
         break;
 
         case CHARGER_AUTO:
-        if(battery_voltage <= VOLTAGE_START_CHARGE){
-            digitalWrite(CHARGER_EN_PIN, HIGH);
-            break;
-        }
-        if(battery_voltage >= CHARGE_VOLTAGE_MAX){
-            digitalWrite(CHARGER_EN_PIN, LOW);
-         break;   
-        }
-        if(battery_temp >= BATTERY_TEMP_MAX){
-            digitalWrite(CHARGER_EN_PIN, LOW);
-            state = CHARGER_FAULT;
-
-        }
+        charger_au();
         break;
+
+        case CHARGER_DONE:
+        charger_disable();
+        // запуск функции оповищение на дисплей
+        break;
+        
+        case CHARGER_FAULT:
+        charger_disable(); 
+        //запуск фунеции ошибки на дисплей
+        break;
+
+        
+
+        
     }
 }

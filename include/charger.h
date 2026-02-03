@@ -27,34 +27,16 @@ void charger_init(void);
 void charger_enable(void);
 void charger_disable(void);
 void charger_au(void);
+void charger_fault(void);
 
 //логика
 void charger_logical(void);
 
-// статус
+//сеттер
+void charger_set_state(charger_state newState);
+
+//геттер
 charger_state charger_get_state(void);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
