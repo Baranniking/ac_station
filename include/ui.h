@@ -8,7 +8,7 @@
 
 
 void displayBegin();
-void drawVoltageValue(uint16_t colorBack, uint16_t colorText, uint16_t colorBar, float voltageValue, float currentValue, float powerValue);
+void drawChargeValue(uint16_t colorBack, uint16_t colorText, uint16_t colorBar, float voltageValue, float currentValue, float powerValue);
 void gridStatus(bool gridStat);
 void cleanMenu();
 

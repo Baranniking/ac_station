@@ -11,7 +11,7 @@ void setup() {
 
 void loop() {
 if(!step){
-    drawVoltageValue(TFT_WHITE, TFT_BLACK, TFT_RED, 14.0, 15.0, 200.0);
+    drawChargeValue(TFT_BLACK, TFT_RED, TFT_RED, 14.0, 100.0, 1400.0);
     step = true;
 }
 }
