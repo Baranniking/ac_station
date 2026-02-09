@@ -23,7 +23,9 @@ void setup() {
  bms.Init();
  bms.update();
  displayBegin(); 
+ dischargeStatus = bms.get.disChargeFetState;
  touchBegin();
+
  
 }
 
@@ -46,6 +48,8 @@ void loop() {
      p.y >= 0 && p.y <= 50){
         bmsDischSet = !bmsDischSet;
         bms.setDischargeMOS(!bmsDischSet);
+        delay (100);
+        drawBulb(30, 30, !bms.get.disChargeFetState);
 
      }
 }

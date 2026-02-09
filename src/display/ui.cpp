@@ -1,13 +1,19 @@
 #include "ui.h"
+#include <daly-bms-uart.h>
+
 
 TFT_eSPI tft;
 
+bool dischargeStatus = false;
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
 void setCurrentScreen(ScreenState newScreen){
     currentScreen = newScreen;
 }
+
+
+
 
 ScreenState getCurrentScreen(){
     return currentScreen;
@@ -21,6 +27,7 @@ void updateScreen(){
         {
             case SCREEN_MAIN:
             drawMainMenu(TFT_RED);
+            drawBulb(30, 30, dischargeStatus);
             break;
 
             case SCREEN_CHARGE:
@@ -48,7 +55,8 @@ void drawMainMenu(uint16_t colorCircle){
     tft.fillScreen(TFT_BLACK);
     tft.drawCircle(160, 120, 118, colorCircle);
     tft.drawCircle(160, 120, 80, colorCircle);
-    tft.fillCircle(30, 30, 30, TFT_RED);
+
+    
     tft.fillCircle(290, 30, 30, TFT_RED);
     tft.fillCircle(30, 210, 30, TFT_RED);
     tft.fillCircle(290, 210, 30, TFT_RED);
@@ -107,4 +115,28 @@ void drawChargeValue(uint16_t colorBack, uint16_t colorText, float voltageValue,
 void drawSettingsMenu(){
 
 }
+
+void drawBulb(uint8_t x, uint8_t y, bool state){
+    uint16_t color = state ? TFT_YELLOW : TFT_DARKGREY;
+    // Колба лампы
+    tft.fillCircle(x, y, 18, color);
+    tft.drawCircle(x, y, 18, TFT_WHITE);
+
+    // Нижняя часть колбы
+    tft.fillRect(x - 10, y + 12, 20, 12, color);
+    tft.drawRect(x - 10, y + 12, 20, 12, TFT_WHITE);
+
+    // Цоколь
+    tft.fillRect(x - 8, y + 24, 16, 10, TFT_LIGHTGREY);
+    tft.drawRect(x - 8, y + 24, 16, 10, TFT_WHITE);
+
+    // Резьба цоколя
+    tft.drawLine(x - 8, y + 27, x + 8, y + 27, TFT_DARKGREY);
+    tft.drawLine(x - 8, y + 30, x + 8, y + 30, TFT_DARKGREY);
+
+    // Спираль внутри
+    tft.drawLine(x - 6, y, x + 6, y, TFT_ORANGE);
+    tft.drawLine(x - 4, y - 5, x + 4, y + 5, TFT_ORANGE);
+}
+
 
