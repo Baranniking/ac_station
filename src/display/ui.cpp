@@ -7,6 +7,16 @@
 #include "iconBattIcon.h"
 TFT_eSPI tft;
 
+uint16_t scaleX = 40;
+uint16_t scaleY = 140;
+uint16_t scaleWidth = 240;
+uint16_t scaleHeight = 8;
+uint16_t oldX = 0;
+
+int bottomY = scaleY + scaleHeight; // низ шкалы
+int tipY = bottomY;                 // вершина у шкалы
+int baseY = bottomY + 14;           // основание ниже
+int halfWidth = 7;                  // половина ширины
 
 bool stateChargeAu = false;
 bool dischargeStatus = false;
@@ -63,9 +73,11 @@ void drawMainMenu(){
      drawChargeAuIcon(stateChargeAu);
      drawSettingsIcon();
      drawChargeManualIcon();
-     drawBattIcon();
+     drawScale();
     tft.drawLine(64, 64, 256, 64, TFT_DARKGREEN);
     tft.drawLine(74, 35, 246, 35, TFT_DARKGREEN);
+    tft.drawLine(64, 95, 256, 95, TFT_DARKGREEN);
+
 
 }
 void drawMainValue(uint16_t colorText, uint8_t volBat){
@@ -164,4 +176,75 @@ void getStatDisMoc(bool DisStat){
     tft.setCursor(80, 15);
     tft.print("Discharg: ");
     DisStat ? tft.print("Yes") : tft.print("No ");
+}
+
+void drawProcentBat(uint8_t procent){
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_GREEN);
+    tft.setCursor(115, 75);
+    tft.print("SOC: ");
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    char buffer[5];  // 3 цифры + % + \0
+    sprintf(buffer, "%03d", procent);
+    tft.print(buffer);
+}
+
+void drawTempReactor(int tempReactor){
+     tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE);
+    tft.setCursor(115, 105);
+    tft.print("TEMP REACTOR: ");
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.print(tempReactor);
+}
+ 
+void drawScale() {
+
+  // основная линия
+  tft.fillRect(scaleX, scaleY, scaleWidth, scaleHeight, TFT_DARKGREEN);
+
+  tft.setTextDatum(MC_DATUM); // текст по центру
+
+  for (int i = 0; i <= 100; i += 10) {
+
+    int x = scaleX + (i / 100.0) * scaleWidth;
+
+    // деления
+    tft.drawLine(x, scaleY - 6, x, scaleY + scaleHeight + 6, TFT_GREEN);
+ 
+    // числа сверху
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE);
+    tft.drawString(String(i), x, scaleY - 15);
+  }
+}
+
+int procentToX(float procent){
+    if (procent < 0) procent = 0;
+    if (procent > 100) procent = 100;
+
+    return scaleX + (procent / 100.0) * scaleWidth;
+}
+
+void drawMarker(int x, uint16_t color) {
+
+  int bottomY = scaleY + scaleHeight + 8;
+  int tipY = bottomY;         
+  int baseY = bottomY + 14;
+  int halfWidth = 7;
+
+  tft.fillTriangle(
+      x, tipY,                    // вершина
+      x - halfWidth, baseY,       // левый угол основания
+      x + halfWidth, baseY,       // правый угол основания
+      color
+  );
+
+}
+
+
+void updateMarker(int newX){
+    drawMarker(oldX, TFT_BLACK);
+    drawMarker(newX, TFT_WHITE);
+    oldX = newX;
 }

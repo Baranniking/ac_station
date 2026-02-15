@@ -16,6 +16,9 @@ TouchPoint p;          // структура
 
 bool touched = false;
 
+float currentPercent = 0;
+float targetPercent = 0;
+
 uint32_t timeUpdateDataBms = 0;
 const uint32_t IntervalUpdate = 1*3000; // 3sec
 
@@ -95,7 +98,13 @@ void loop() {
     if (millis() - timeUpdateDataBms >= IntervalUpdate){
         timeUpdateDataBms = millis();
         bms.update();
-        drawMainValue(TFT_GREEN, bms.get.packSOC);
+        targetPercent = bms.get.packSOC;
+        currentPercent += (targetPercent - currentPercent) * 0.1;
+        int x = procentToX(currentPercent);
+        updateMarker(x);
+        drawProcentBat(bms.get.packSOC);
+        drawTempReactor(bms.get.cellTemperature[0]);
+        //drawMainValue(TFT_GREEN, bms.get.packSOC);
         getStatMoc(bms.get.chargeFetState);
         getStatDisMoc(bms.get.disChargeFetState);
         drawChargeAuIcon(stateChargeAu);

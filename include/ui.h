@@ -31,6 +31,11 @@ void drawChargeManualIcon();
 void drawBattIcon();
 void getStatMoc(bool ChargState);
 void getStatDisMoc(bool DisStat);
+void drawProcentBat(uint8_t procent);
+void drawTempReactor(int tempReactor);
+void drawScale();
+int procentToX(float procent);
+void updateMarker(int newX);
 
 extern bool dischargeStatus;
 extern bool stateChargeAu;
