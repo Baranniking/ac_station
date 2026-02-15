@@ -1,12 +1,18 @@
 #include "charger.h"
+#include <config.h>
 #include <Arduino.h>
-#include "config.h"
-#include "ina219.h"
-
+#include <daly-bms-uart.h>
 //внутренее состояние, не видно из вне.
 static charger_state state = CHARGER_OFF;
+static Daly_BMS_UART* bmsPtr;
+static bool checkResMillis = false;
+static bool activCharge = false;
+static uint32_t chargeStartTime = 0;
+static uint16_t stateBatt = 0;
 
-
+void chargeBegin(Daly_BMS_UART* bms){
+ bmsPtr = bms;
+}
 
 charger_state charger_get_state(void)
 {
@@ -17,6 +23,9 @@ void charger_set_state(charger_state newState)
 {
 state = newState;
 }
+void activSetChargAU(bool state){
+    activCharge = state;
+}
 
 
 // публичные функции 
@@ -24,47 +33,60 @@ state = newState;
 void charger_init(void)
 {
     pinMode(CHARGER_EN_PIN, OUTPUT); 
-    digitalWrite(CHARGER_EN_PIN, LOW); 
+    digitalWrite(CHARGER_EN_PIN, HIGH); 
     state = CHARGER_OFF;
 }
 
 void charger_enable(void)
 {
-    digitalWrite(CHARGER_EN_PIN, HIGH);
+    uint32_t delayTimeOnChargeBms = 5000;
+    
+    if(activCharge) return;
+
+    if(!checkResMillis){
+    digitalWrite(CHARGER_EN_PIN, LOW); //включение блока питания
+    checkResMillis = true;
+    chargeStartTime = millis();
+    }
+
+    if(checkResMillis && millis() - chargeStartTime >= delayTimeOnChargeBms){
+        bmsPtr->setChargeMOS(true);
+        Serial.println("onMOScharge");
+        checkResMillis = false;
+        activCharge = true;
+        
+    }
 }
 
 void charger_disable(void)
 {
-    digitalWrite(CHARGER_EN_PIN, LOW);
+    if(!activCharge) return;
+    digitalWrite(CHARGER_EN_PIN, HIGH);
+    bmsPtr->setChargeMOS(false);
+    Serial.println("offMOScharge");
+       checkResMillis = false;
+       activCharge = false;
 }
 
 void charger_au(void)
 {
-      
-      float v = ina219_get_voltage();
-      float i = ina219_get_current();
+    stateBatt = bmsPtr->get.packSOC;
+    if(!activCharge && stateBatt <= START_CHARG){
+        charger_enable();
 
-    if(v <= VOLTAGE_START_CHARGE){
-            charger_enable();
-        }
-        if(v >= CHARGE_VOLTAGE_MAX){
-            charger_disable();
-            state = CHARGER_DONE; 
-        }
+
+    }else if(activCharge && stateBatt >= STOP_CHARG)
+    {
+        charger_disable();
+        
+    }
 }
 
-void charger_fault(void){
-    digitalWrite(CHARGER_EN_PIN, LOW);
-    //ошибку на дисплей
-
-}
-
-    //////////////////////////////////////////////////////////////////////// логика зарядки
+    // логика зарядки
     void charger_logical(void)
 {
       switch(state)
     {
-        ina219_update();
         case CHARGER_ON:
         charger_enable();
         break;

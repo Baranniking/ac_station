@@ -18,13 +18,21 @@ void updateScreen();
 ScreenState getCurrentScreen();
 void setCurrentScreen(ScreenState newScreen);
 void setDischargeStatus(bool newDischargeStatus);
-void drawChargeValue(uint16_t colorBack, uint16_t colorText, float voltageValue, float currentValue, float powerValue, float socValue);
+void drawChargeValue(float voltageValue, float currentValue, float powerValue, float socValue);
 void drawMainValue(uint16_t colorText, uint8_t volBat);
-void drawChargeMenu(uint16_t colorVoltage, uint16_t colorCurrent, uint16_t colorPower);
+void drawChargeMenu();
 void gridStatus(bool gridStat);
-void drawMainMenu(uint16_t colorCircle);
+void drawMainMenu();
 void drawSettingsMenu();
-void drawBulb(uint8_t x, uint8_t y, bool state);
+void drawBulb(bool state);
+void drawChargeAuIcon(bool stateChargeAu);
+void drawSettingsIcon();
+void drawChargeManualIcon();
+void drawBattIcon();
+void getStatMoc(bool ChargState);
+void getStatDisMoc(bool DisStat);
+
 extern bool dischargeStatus;
+extern bool stateChargeAu;
 
 #endif
