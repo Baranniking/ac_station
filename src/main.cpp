@@ -47,7 +47,7 @@ void loop() {
      }else if(p.x >= 0 && p.x <= 50 && //если было нажатие на кнопку розряд
      p.y >= 0 && p.y <= 50){
         bmsDischSet = !bmsDischSet;
-        bms.setDischargeMOS(!bmsDischSet);
+        bms.setDischargeMOS(bmsDischSet);
         delay (100);
         drawBulb(30, 30, !bms.get.disChargeFetState);
 
