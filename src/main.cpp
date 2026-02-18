@@ -24,11 +24,12 @@ void setup() {
 
  displayBegin(); 
  
- dischargeStatus = bms_get_charger(); // передаем сотояние bms
+ dischargeStatus = bms_get_discharge(); //передаем сотояние bms по розрядке
  delay(100);
- stateChargeAu = bms.get.chargeFetState;
+ stateChargeAu = bms_get_charge();
  delay(100);
- activSetChargAU(bms.get.chargeFetState);
+ activSetChargAU(bms_get_charge());
+
  touchBegin();
 
  charger_init();
@@ -39,80 +40,37 @@ void setup() {
 }
 
 void loop() {
+    
+    if(updateTouch()){
+        uiProcessTouch(getLastTouch());
+    } 
+
     updateScreen();
     charger_logical();
-
-
-    if(checkTouch()) {
-    TouchPoint p = getLastTouch();
-    Serial.print("X: "); Serial.print(p.x);
-    Serial.print(" Y: "); Serial.println(p.y);
-    Serial.print(" Z: "); Serial.println(p.z);
     
 
-    if(getCurrentScreen() == SCREEN_CHARGE){
-     if(p.x >= 150 && p.x <= 170 && //если было нажатие на кнопку "main"
-     p.y >= 220 && p.y <= 250){
-        setCurrentScreen(SCREEN_MAIN);
-     }
-     }
      
-     if(getCurrentScreen() == SCREEN_MAIN){
-     if(p.x >= 140 && p.x <= 180 && //если было нажатие на кнопку "charge"
-     p.y >= 120 && p.y <= 160){
-        setCurrentScreen(SCREEN_CHARGE);
-<<<<<<< HEAD
-     }else if(p.x >= 0 && p.x <= 50 && //если было нажатие на кнопку розряд
-     p.y >= 0 && p.y <= 50){
-        bmsDischSet = !bmsDischSet;
-        bms.setDischargeMOS(bmsDischSet);
-        delay (100);
-        drawBulb(30, 30, !bms.get.disChargeFetState);
+     
 
-=======
->>>>>>> a2b5eae2878d6c4344bef417622e8a8b9c441fe4
-     }
-     }
+   
 
-     if(getCurrentScreen() == SCREEN_MAIN){
-     if(p.x >= 0 && p.x <= 50 && //если было нажатие на кнопку "discharge"
-     p.y >= 0 && p.y <= 50){
-        dischargeStatus = !dischargeStatus;
-        bms.setDischargeMOS(dischargeStatus);
-        drawBulb(dischargeStatus);
-     }
-     }
-
-     if(getCurrentScreen() == SCREEN_MAIN){
-     if(p.x >= 280 && p.x <= 320 && //если было нажатие на кнопку AU CHARGE
-        p.y >= 0 && p.y <= 50){
-            stateChargeAu = !stateChargeAu;
-        }
-        if(stateChargeAu){
-            charger_set_state(CHARGER_AUTO);
-            drawChargeAuIcon(stateChargeAu);
-        }else{
-            charger_set_state(CHARGER_OFF);
-           drawChargeAuIcon(stateChargeAu);
-        }
-}
-    }
+    
 
     if(getCurrentScreen() == SCREEN_MAIN){
     if (millis() - timeUpdateDataBms >= IntervalUpdate){
         timeUpdateDataBms = millis();
-        bms.update();
-        targetPercent = bms.get.packSOC;
+        bms_manager_update();
+        targetPercent = bms_get_soc();
         currentPercent += (targetPercent - currentPercent) * 0.1;
         int x = procentToX(currentPercent);
         updateMarker(x);
-        drawProcentBat(bms.get.packSOC);
-        drawTempReactor(bms.get.cellTemperature[0]);
+        drawProcentBat(bms_get_soc());
+        drawTempReactor(bms_get_temp());
         //drawMainValue(TFT_GREEN, bms.get.packSOC);
-        getStatMoc(bms.get.chargeFetState);
-        getStatDisMoc(bms.get.disChargeFetState);
+        getStatMoc(bms_get_charge());
+        getStatDisMoc(bms_get_discharge());
         drawChargeAuIcon(stateChargeAu);
-        Serial.println(bms.get.chargeFetState);
+        Serial.println(bms_get_charge());
         Serial.println(charger_get_state());
 
 
@@ -122,12 +80,12 @@ void loop() {
     if(getCurrentScreen() == SCREEN_CHARGE){
          if (millis() - timeUpdateDataBms >= IntervalUpdate) {
                 timeUpdateDataBms = millis();
-                bms.update();
+                bms_get_soc;
                 drawChargeValue(
-                    bms.get.packVoltage,
-                    bms.get.packCurrent,
-                    bms.get.packVoltage * bms.get.packCurrent,
-                    bms.get.packSOC
+                    bms_get_bat_voltage(),
+                    bms_get_current(),
+                    bms_get_bat_voltage() * bms_get_current(),
+                    bms_get_soc()
                 );
     }
     }
