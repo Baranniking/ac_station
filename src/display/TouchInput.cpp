@@ -14,7 +14,7 @@ ts.setRotation(1);
 
 }
 
-bool checkTouch(){
+bool updateTouch(){ //  Оброботка касания 
 if(!ts.touched()) return false;
 TS_Point p = ts.getPoint();
 if(p.z > 100){
@@ -29,7 +29,7 @@ if(p.z > 100){
 return false;
 }
 
-TouchPoint getLastTouch(){
+TouchPoint getLastTouch(){  
       return point;
 
 }

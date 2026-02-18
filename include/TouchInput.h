@@ -18,7 +18,7 @@ struct TouchPoint{
 extern XPT2046_Touchscreen ts;
 void touchBegin();
 TouchPoint getLastTouch();
-bool checkTouch();
+bool updateTouch();
 
 
 

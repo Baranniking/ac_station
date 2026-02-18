@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <TFT_eSPI.h>
 #include <Arduino.h>
+#include "TouchInput.h"
 
 enum ScreenState
 {
@@ -13,7 +14,10 @@ enum ScreenState
     SCREEN_SETTINGS
 };
 
+
+
 void displayBegin();
+void uiProcessTouch(TouchPoint point);
 void updateScreen();
 ScreenState getCurrentScreen();
 void setCurrentScreen(ScreenState newScreen);

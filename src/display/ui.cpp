@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "TouchInput.h"
 #include "config.h"
 #include "iconChargeAv.h"
 #include "iconInvertor.h"
@@ -6,6 +7,10 @@
 #include "iconChargeManual.h"
 #include "iconBattIcon.h"
 TFT_eSPI tft;
+
+
+
+
 
 uint16_t scaleX = 40;
 uint16_t scaleY = 140;
@@ -23,6 +28,59 @@ bool dischargeStatus = false;
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
+
+
+
+void uiProcessTouch(const TouchPoint& point){
+    Serial.print("X: "); Serial.print(point.x);
+    Serial.print(" Y: "); Serial.println(point.y);
+    Serial.print(" Z: "); Serial.println(point.z);
+
+
+    //=========================если нажать на кнопку "заряд"================================
+    if(getCurrentScreen() == SCREEN_MAIN &&
+        point.x >= 140 && point.x <= 180 && 
+        point.y >= 120 && point.y <= 160){
+        setCurrentScreen(SCREEN_CHARGE);  //если было нажатие на кнопку "charge"
+     }
+    
+    //==========================если нажать на кнопку "разряд"============================== 
+    else if(getCurrentScreen() == SCREEN_MAIN &&
+     point.x >= 0 && point.x <= 50 && //если было нажатие на кнопку "discharge"
+     point.y >= 0 && point.y <= 50){
+        dischargeStatus = !dischargeStatus;
+        bms_set_discharge(dischargeStatus); // заменить на команду логики
+        drawBulb(dischargeStatus);
+     }
+    
+    //==============================Нажатие на кнопку АвтоЗарядка===========================
+    
+     else if(getCurrentScreen() == SCREEN_MAIN &&
+        point.x >= 280 && point.x <= 320 && //если было нажатие на кнопку AU CHARGE
+        point.y >= 0 && point.y <= 50){
+        stateChargeAu = !stateChargeAu;
+
+        if(stateChargeAu){
+            charger_set_state(CHARGER_AUTO);
+            drawChargeAuIcon(stateChargeAu);
+        }else{
+            charger_set_state(CHARGER_OFF);
+           drawChargeAuIcon(stateChargeAu);
+        }
+}
+    
+    //==============================Нажатие на кнопку "меню"================================
+    else if(getCurrentScreen() == SCREEN_CHARGE &&
+     point.x >= 150 && point.x <= 170 && 
+     point.y >= 220 && point.y <= 250){ 
+     setCurrentScreen(SCREEN_MAIN);  //если было нажатие на кнопку "main" в меню "зарядки"
+     }
+     //====================================================================================
+     
+     }
+     
+
+    
 
 
 void setCurrentScreen(ScreenState newScreen){
@@ -63,9 +121,9 @@ tft.fillScreen(TFT_BLACK);
 
 }
 
-void gridStatus(bool gridStat){
-tft.fillRect(290, 10, 15, 15, gridStat ? TFT_GREEN : TFT_RED);
-}
+//void gridStatus(bool gridStat){
+//tft.fillRect(290, 10, 15, 15, gridStat ? TFT_GREEN : TFT_RED);
+//}
 
 void drawMainMenu(){
      tft.fillScreen(TFT_BLACK);
