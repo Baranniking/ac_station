@@ -25,12 +25,12 @@ int tipY = bottomY;                 // вершина у шкалы
 int baseY = bottomY + 14;           // основание ниже
 int halfWidth = 7;                  // половина ширины
 
-bool stateChargeAu = false;
+bool stateChargeAuIcon = false;
 bool dischargeStatus = false;
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
-const SystemState* state = logic_get_state();
+const SystemState* state = bms_get_state();
 
 const int numButtons = sizeof(UIBtn)/sizeof(UIBtn[0]); //sizeof определяет общий размер массива и делит его на одну ячейку, тем самым определяем размер в одной ячейке
 
@@ -75,21 +75,21 @@ void uiProcessTouch(const tP point){
     }
 
     void toggleDischargeMode(){
-        dischargeStatus = !dischargeStatus;
-        bms_set_discharge(dischargeStatus); 
+        if(logical_get_state() == CHARGER_OFF){
+        dischargeStatus = state->dischargeEnabled;
+        logical_set_state(CHARGER_ON); 
         drawBulb(dischargeStatus);
+        }else {
+            logical_set_state(CHARGER_OFF);
+            dischargeStatus = state->dischargeEnabled;
+            drawBulb(dischargeStatus);
+
+        }
+
     }
 
     void toggleAuChargeMode(){
-        stateChargeAu = !stateChargeAu;
-
-        if(stateChargeAu){
-            charger_set_state(CHARGER_AUTO);
-            drawChargeAuIcon(stateChargeAu);
-        }else{
-            charger_set_state(CHARGER_OFF);
-           drawChargeAuIcon(stateChargeAu);
-        }
+            charger_au();
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

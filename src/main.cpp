@@ -3,7 +3,7 @@
 #include "ui.h"
 #include "bms_manager.h"
 #include "TouchInput.h"
-#include "charger.h"
+#include "logical.h"
 
 TouchPoint p;          // структура
 
@@ -13,8 +13,6 @@ bool touched = false;
 float currentPercent = 0;
 float targetPercent = 0;
 
-uint32_t timeUpdateDataBms = 0;
-const uint32_t IntervalUpdate = 1*3000; // 3sec
 
 void setup() {
  Serial.begin(9600);
@@ -44,10 +42,8 @@ void loop() {
     if(updateTouch()){
         uiProcessTouch(getLastTouch());
     } 
-
-    updateScreen();
     charger_logical();
-    
+    updateScreen();
 
      
      
@@ -55,27 +51,25 @@ void loop() {
    
 
     
-
-    if(getCurrentScreen() == SCREEN_MAIN){
-    if (millis() - timeUpdateDataBms >= IntervalUpdate){
-        timeUpdateDataBms = millis();
-        bms_manager_update();
-        targetPercent = bms_get_soc();
-        currentPercent += (targetPercent - currentPercent) * 0.1;
-        int x = procentToX(currentPercent);
-        updateMarker(x);
-        drawProcentBat(bms_get_soc());
-        drawTempReactor(bms_get_temp());
-        //drawMainValue(TFT_GREEN, bms.get.packSOC);
-        getStatMoc(bms_get_charge());
-        getStatDisMoc(bms_get_discharge());
-        drawChargeAuIcon(stateChargeAu);
-        Serial.println(bms_get_charge());
-        Serial.println(charger_get_state());
+    
 
 
-    } 
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
     if(getCurrentScreen() == SCREEN_CHARGE){
          if (millis() - timeUpdateDataBms >= IntervalUpdate) {

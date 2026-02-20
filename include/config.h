@@ -16,6 +16,7 @@
 #define CHARGER_EN_PIN 25
 #define START_CHARG 90
 #define STOP_CHARG 99
+#define MAX_TEMP 40
 
 
 

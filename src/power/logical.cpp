@@ -18,7 +18,7 @@ void charger_init(void)
     state = CHARGER_OFF;
 }
 
-void logicalUpdate(){
+void UpdateDataBMS(){
 const DataBMS bms = bms_get_data();
 systemState.soc = bms.batProcent;
 systemState.voltage = bms.batVolatge;
@@ -29,10 +29,12 @@ systemState.dischargeEnabled = bms.getDischargeState;
 }
 
 
-const SystemState* logic_get_state()
+const SystemState* bms_get_state()
 {
     return &systemState;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
  void charger_logical(void)
 {
@@ -52,25 +54,70 @@ const SystemState* logic_get_state()
 
         case CHARGER_DONE:
         charger_disable();
-        // запуск функции оповищение на дисплей
         break;
         
         case CHARGER_FAULT:
         charger_disable(); 
-        //запуск фунеции ошибки на дисплей
         break;        
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void charger_enable(void)
+{
+    static const uint32_t delayTimeOnChargeBms = 5000;
+    
+    if(activCharge) return;
+
+    if(!checkResMillis){
+    digitalWrite(CHARGER_EN_PIN, LOW); //включение блока питания
+    checkResMillis = true;
+    chargeStartTime = millis();
+    }
+
+    if(checkResMillis && millis() - chargeStartTime >= delayTimeOnChargeBms){
+        bms_set_charge(true);
+        Serial.println("onMOScharge");
+        checkResMillis = false;
+        activCharge = true;
+        
+    }
+}
+
+void charger_disable(void)
+{
+    if(!activCharge) return;
+    digitalWrite(CHARGER_EN_PIN, HIGH);
+    bms_set_charge(false);
+    Serial.println("offMOScharge");
+       checkResMillis = false;
+       activCharge = false;
+}
+
+void charger_au(void)
+{
+   if(systemState.temp > MAX_TEMP){
+     state = CHARGER_FAULT;
+     return;
+   }
+   if(state == CHARGER_OFF){
+    state = CHARGER_AUTO;
+   }else {
+    state = CHARGER_OFF;
+   }
+        
+    }
+}
 
 /////
-charger_state charger_get_state(void)
+charger_state logical_get_state(void)
 {
     return state;
 }
 
 /////
-void charger_set_state(charger_state newState)
+void logical_set_state(charger_state newState)
 {
 state = newState;
 }
@@ -85,49 +132,10 @@ void activSetChargAU(bool state){
 
 
 
-void charger_enable(void)
-{
-    uint32_t delayTimeOnChargeBms = 5000;
-    
-    if(activCharge) return;
-
-    if(!checkResMillis){
-    digitalWrite(CHARGER_EN_PIN, LOW); //включение блока питания
-    checkResMillis = true;
-    chargeStartTime = millis();
-    }
-
-    if(checkResMillis && millis() - chargeStartTime >= delayTimeOnChargeBms){
-        bmsPtr->setChargeMOS(true);
-        Serial.println("onMOScharge");
-        checkResMillis = false;
-        activCharge = true;
-        
-    }
-}
-
-void charger_disable(void)
-{
-    if(!activCharge) return;
-    digitalWrite(CHARGER_EN_PIN, HIGH);
-    bmsPtr->setChargeMOS(false);
-    Serial.println("offMOScharge");
-       checkResMillis = false;
-       activCharge = false;
-}
-
-void charger_au(void)
-{
-    stateBatt = bmsPtr->get.packSOC;
-    if(!activCharge && stateBatt <= START_CHARG){
-        charger_enable();
 
 
-    }else if(activCharge && stateBatt >= STOP_CHARG)
-    {
-        charger_disable();
-        
-    }
-}
+
+
+
 
  
