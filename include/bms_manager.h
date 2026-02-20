@@ -1,8 +1,19 @@
 #pragma once
 #include <Arduino.h>
 
+
+struct DataBMS{
+    float batVolatge;
+    float batCurrent;
+    float batTemp;
+    float batProcent;
+    bool getChargeState;
+    bool getDischargeState;
+}; 
+
 void bms_manager_init(HardwareSerial& serial);
 void bms_manager_update();
+const DataBMS bms_get_data();
 
 float bms_get_soc();
 float bms_get_bat_voltage();

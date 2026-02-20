@@ -1,15 +1,30 @@
 #include "bms_manager.h"
 #include <daly-bms-uart.h>
 
-static DALY_BMS_UART bms(Serial1); //создаем обьект бмс
+static Daly_BMS_UART bms(Serial1); //создаем обьект бмс
+
+  
+
+struct DataBMS bmsData;
+
+const DataBMS bms_get_data()   
+{
+    return bmsData;
+}
 
 void bms_manager_init(HardwareSerial& serial){
-    bms.init();
+    bms.Init();
     bms.update();
 }
 
 void bms_manager_update(){
     bms.update();
+    bmsData.batVolatge = bms.get.packVoltage;
+    bmsData.batCurrent = bms.get.packCurrent;
+    bmsData.batTemp = bms.get.cellTemperature[0];
+    bmsData.batProcent = bms.get.packSOC;
+    bmsData.getChargeState = bms.get.chargeFetState;
+    bmsData.getDischargeState = bms.get.disChargeFetState;
 }
 
 float bms_get_soc(){

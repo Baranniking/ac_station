@@ -15,6 +15,21 @@ enum ScreenState
 };
 
 
+struct tP{
+    int x;
+    int y;
+    int z;
+};
+
+
+struct UIButton{
+    uint16_t x1, y1;
+    uint16_t x2, y2;
+    uint16_t screen;
+    void (*action)();
+};
+
+
 
 void displayBegin();
 void uiProcessTouch(TouchPoint point);
@@ -40,6 +55,11 @@ void drawTempReactor(int tempReactor);
 void drawScale();
 int procentToX(float procent);
 void updateMarker(int newX);
+
+void enterToChargeMenu();
+void enterToMainMenu();
+void toggleDischargeMode();
+void toggleAuChargeMode();
 
 extern bool dischargeStatus;
 extern bool stateChargeAu;

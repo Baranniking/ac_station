@@ -1,6 +1,6 @@
 #include "ui.h"
-#include "TouchInput.h"
 #include "config.h"
+#include "logical.h"
 #include "iconChargeAv.h"
 #include "iconInvertor.h"
 #include "iconSettings.h"
@@ -8,15 +8,17 @@
 #include "iconBattIcon.h"
 TFT_eSPI tft;
 
-
-
-
-
 uint16_t scaleX = 40;
 uint16_t scaleY = 140;
 uint16_t scaleWidth = 240;
 uint16_t scaleHeight = 8;
 uint16_t oldX = 0;
+
+float currentPercent = 0;
+float targetPercent = 0;
+
+uint32_t timeUpdateDataBms = 0;
+const uint32_t IntervalUpdate = 1*3000; // 3sec
 
 int bottomY = scaleY + scaleHeight; // низ шкалы
 int tipY = bottomY;                 // вершина у шкалы
@@ -28,36 +30,57 @@ bool dischargeStatus = false;
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
+const SystemState* state = logic_get_state();
+
+const int numButtons = sizeof(UIBtn)/sizeof(UIBtn[0]); //sizeof определяет общий размер массива и делит его на одну ячейку, тем самым определяем размер в одной ячейке
+
+void displayBegin(){
+tft.init();
+tft.setRotation(1);
+tft.fillScreen(TFT_BLACK);
+}
 
 
 
-void uiProcessTouch(const TouchPoint& point){
-    Serial.print("X: "); Serial.print(point.x);
+static UIButton UIBtn[]{
+    {140, 120, 180, 160, SCREEN_MAIN, enterToChargeMenu, //Кнопка перехода в меню значений.
+    {150, 220, 170, 250, SCREEN_CHARGE, enterToMainMenu}, //Кнопка перехода в главное меню с меню значений.
+    {0, 0, 50, 50, SCREEN_MAIN, toggleDischargeMode}, //Кнопка запуская разряда.
+    {280, 0, 320, 50, SCREEN_MAIN, toggleAuChargeMode} //Кнопка запуска АвтоЗаряда.
+    
+};
+
+void uiProcessTouch(const tP point){
+    Serial.print(" X: "); Serial.println(point.x);
     Serial.print(" Y: "); Serial.println(point.y);
     Serial.print(" Z: "); Serial.println(point.z);
 
+    for(int i = 0; i < numButtons; i++){
+        UIButton &btn = UIBtn[i];
+        if(getCurrentScreen() == btn.screen &&
+             point.x >= btn.x1 && point.x < btn.x2 &&
+             point.y >= btn.y1 && point.y < btn.y2){
+                btn.action();
+                break;
+             }
+    }
+}
 
-    //=========================если нажать на кнопку "заряд"================================
-    if(getCurrentScreen() == SCREEN_MAIN &&
-        point.x >= 140 && point.x <= 180 && 
-        point.y >= 120 && point.y <= 160){
-        setCurrentScreen(SCREEN_CHARGE);  //если было нажатие на кнопку "charge"
-     }
-    
-    //==========================если нажать на кнопку "разряд"============================== 
-    else if(getCurrentScreen() == SCREEN_MAIN &&
-     point.x >= 0 && point.x <= 50 && //если было нажатие на кнопку "discharge"
-     point.y >= 0 && point.y <= 50){
+    void enterToChargeMenu(){
+        setCurrentScreen(SCREEN_CHARGE);
+    }
+
+    void enterToMainMenu(){
+        setCurrentScreen(SCREEN_MAIN);
+    }
+
+    void toggleDischargeMode(){
         dischargeStatus = !dischargeStatus;
-        bms_set_discharge(dischargeStatus); // заменить на команду логики
+        bms_set_discharge(dischargeStatus); 
         drawBulb(dischargeStatus);
-     }
-    
-    //==============================Нажатие на кнопку АвтоЗарядка===========================
-    
-     else if(getCurrentScreen() == SCREEN_MAIN &&
-        point.x >= 280 && point.x <= 320 && //если было нажатие на кнопку AU CHARGE
-        point.y >= 0 && point.y <= 50){
+    }
+
+    void toggleAuChargeMode(){
         stateChargeAu = !stateChargeAu;
 
         if(stateChargeAu){
@@ -67,34 +90,29 @@ void uiProcessTouch(const TouchPoint& point){
             charger_set_state(CHARGER_OFF);
            drawChargeAuIcon(stateChargeAu);
         }
-}
-    
-    //==============================Нажатие на кнопку "меню"================================
-    else if(getCurrentScreen() == SCREEN_CHARGE &&
-     point.x >= 150 && point.x <= 170 && 
-     point.y >= 220 && point.y <= 250){ 
-     setCurrentScreen(SCREEN_MAIN);  //если было нажатие на кнопку "main" в меню "зарядки"
-     }
-     //====================================================================================
-     
-     }
-     
+    }
 
-    
+///////////////////////////////////////////////////////////////////////////////////////////////////
+   
+
+
+
+
+
+
 
 
 void setCurrentScreen(ScreenState newScreen){
     currentScreen = newScreen;
 }
 
-
-
-
 ScreenState getCurrentScreen(){
     return currentScreen;
 }
 
 void updateScreen(){
+    updateValue();
+
     if(currentScreen != lastScreen){
         lastScreen = currentScreen;
 
@@ -114,16 +132,38 @@ void updateScreen(){
     }
 }
 
-void displayBegin(){
-tft.init();
-tft.setRotation(1);
-tft.fillScreen(TFT_BLACK);
+void updateValue(){
+    if (millis() - timeUpdateDataBms >= IntervalUpdate){
+         timeUpdateDataBms = millis();
+         switch(currentScreen)
+         {
+
+           case SCREEN_MAIN:
+        logicalUpdate();
+        targetPercent = 
+        currentPercent += (targetPercent - currentPercent) * 0.1;
+        int x = procentToX(currentPercent);
+        updateMarker(x);
+        drawProcentBat(state->soc);
+        drawTempReactor(state->temp;
+        getStatMoc(state->chargeEnabled);
+        getStatDisMoc(state->dischargeEnabled);
+        drawChargeAuIcon(stateChargeAu);
+        Serial.println(state->chargeEnabled));
+        Serial.println(state->dischargeEnabled);
+            break;
+
+            case SCREEN_CHARGE:
+        drawChargeValue(
+        state->voltage,
+        state->current,
+        state->voltage * state->current,
+        state->soc);
+            break; 
+         }
+    }
 
 }
-
-//void gridStatus(bool gridStat){
-//tft.fillRect(290, 10, 15, 15, gridStat ? TFT_GREEN : TFT_RED);
-//}
 
 void drawMainMenu(){
      tft.fillScreen(TFT_BLACK);
@@ -135,9 +175,8 @@ void drawMainMenu(){
     tft.drawLine(64, 64, 256, 64, TFT_DARKGREEN);
     tft.drawLine(74, 35, 246, 35, TFT_DARKGREEN);
     tft.drawLine(64, 95, 256, 95, TFT_DARKGREEN);
-
-
 }
+
 void drawMainValue(uint16_t colorText, uint8_t volBat){
     tft.setTextSize(6);
     tft.setTextColor(colorText, TFT_BLACK);
@@ -179,7 +218,6 @@ void drawChargeMenu()
 
 void drawChargeValue(float voltageValue, float currentValue, float powerValue, float socValue)
 {
-
     tft.setTextSize(2);
     tft.setTextColor(TFT_GREEN, FALL_OUT_BG);
 
@@ -191,10 +229,6 @@ void drawChargeValue(float voltageValue, float currentValue, float powerValue, f
 
     tft.setCursor(200, 75);
     tft.print(powerValue, 1);
-}
-
-void drawSettingsMenu(){
-
 }
 
 void drawBulb(bool state){
@@ -257,7 +291,6 @@ void drawTempReactor(int tempReactor){
 }
  
 void drawScale() {
-
   // основная линия
   tft.fillRect(scaleX, scaleY, scaleWidth, scaleHeight, TFT_DARKGREEN);
 
@@ -299,7 +332,6 @@ void drawMarker(int x, uint16_t color) {
   );
 
 }
-
 
 void updateMarker(int newX){
     drawMarker(oldX, TFT_BLACK);

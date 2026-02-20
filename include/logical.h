@@ -23,6 +23,19 @@ typedef enum {
     CHARGER_FAULT
 } charger_state;
 
+
+typedef struct {
+    float soc;
+    float voltage;
+    float current;
+    float temp;
+    bool dischargeEnabled;
+    bool chargeEnabled;
+} SystemState;
+
+void logicalUpdate();
+const SystemState* logic_get_state();
+
 //передача обьекта
 void chargeBegin(Daly_BMS_UART* bms);
 
