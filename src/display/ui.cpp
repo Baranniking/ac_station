@@ -139,8 +139,8 @@ void updateValue(){
          {
 
            case SCREEN_MAIN:
-        logicalUpdate();
-        targetPercent = 
+        UpdateDataBMS();
+        targetPercent = state->soc;
         currentPercent += (targetPercent - currentPercent) * 0.1;
         int x = procentToX(currentPercent);
         updateMarker(x);
