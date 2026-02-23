@@ -27,6 +27,7 @@ int halfWidth = 7;                  // половина ширины
 
 static bool changeMenuState = false;
 static bool dischargeStatus = false;
+
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
@@ -39,7 +40,6 @@ tft.init();
 tft.setRotation(1);
 tft.fillScreen(TFT_BLACK);
 }
-
 
 
 static UIButton UIBtn[]{

@@ -5,13 +5,6 @@
 #include "TouchInput.h"
 #include "logical.h"
 
-TouchPoint p;          // структура
-
-
-bool touched = false;
-
-float currentPercent = 0;
-float targetPercent = 0;
 
 
 void setup() {
@@ -22,7 +15,6 @@ void setup() {
 
  displayBegin(); 
  
-
  touchBegin();
 
  charger_init();
