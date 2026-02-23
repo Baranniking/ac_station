@@ -46,7 +46,7 @@ void drawSettingsMenu();
 void drawBulb(bool state);
 void drawChargeAuIcon(bool stateChargeAu);
 void drawSettingsIcon();
-void drawChargeManualIcon();
+void drawChargeManualIcon(bool stateCharge);
 void drawBattIcon();
 void getStatMoc(bool ChargState);
 void getStatDisMoc(bool DisStat);
@@ -55,6 +55,7 @@ void drawTempReactor(int tempReactor);
 void drawScale();
 int procentToX(float procent);
 void updateMarker(int newX);
+
 
 void enterToChargeMenu();
 void enterToMainMenu();

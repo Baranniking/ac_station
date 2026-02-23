@@ -25,12 +25,12 @@ int tipY = bottomY;                 // вершина у шкалы
 int baseY = bottomY + 14;           // основание ниже
 int halfWidth = 7;                  // половина ширины
 
-bool stateChargeAuIcon = false;
-bool dischargeStatus = false;
+static bool changeMenuState = false;
+static bool dischargeStatus = false;
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
-const SystemState* state = bms_get_state();
+const SystemState* state = logical_get();
 
 const int numButtons = sizeof(UIBtn)/sizeof(UIBtn[0]); //sizeof определяет общий размер массива и делит его на одну ячейку, тем самым определяем размер в одной ячейке
 
@@ -76,43 +76,54 @@ void uiProcessTouch(const tP point){
 
     void toggleDischargeMode(){
         if(logical_get_state() == CHARGER_OFF){
-        dischargeStatus = state->dischargeEnabled;
-        logical_set_state(CHARGER_ON); 
-        drawBulb(dischargeStatus);
+            logical_set_state(CHARGER_ON); 
+            
+
         }else {
             logical_set_state(CHARGER_OFF);
-            dischargeStatus = state->dischargeEnabled;
-            drawBulb(dischargeStatus);
-
+        
         }
 
     }
 
     void toggleAuChargeMode(){
-            charger_au();
+            logical_toggle_auto_mode();
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
    
 
-
-
-
-
-
-
-
-void setCurrentScreen(ScreenState newScreen){
-    currentScreen = newScreen;
+void updateDischargeButton(bool enabled){
+    static bool lastState = false;
+    if(changeMenuState || enabled != lastState){
+    drawBulb(enabled);
+    lastState = enabled;
+    }
 }
 
-ScreenState getCurrentScreen(){
-    return currentScreen;
+void updateChargeAuButton(bool enabledAuCharge){
+    static bool lastState = false;
+    if(changeMenuState || enabledAuCharge != lastState){
+    drawChargeAuIcon(enabledAuCharge);
+    lastState = enabledAuCharge;
+    }
+
 }
+
+void updateChargeManualButton(bool enabledCharge){
+    static bool lastState = false;
+    if(changeMenuState || enabledCharge != lastState){
+        drawChargeManualIcon(enabledCharge);
+        lastState = enabledCharge;
+    }
+}
+
+void changeMenu(){
+    changeMenuState = true;
+}
+
 
 void updateScreen(){
-    updateValue();
-
     if(currentScreen != lastScreen){
         lastScreen = currentScreen;
 
@@ -129,7 +140,13 @@ void updateScreen(){
             case SCREEN_SETTINGS:
             drawSettingsMenu();
         }
+        changeMenu();
     }
+
+    updateValue();
+    updateDischargeButton(state->dischargeEnabled);
+    updateChargeAuButton(state->chargeEnabled);
+    changeMenuState = false;
 }
 
 void updateValue(){
@@ -138,19 +155,17 @@ void updateValue(){
          switch(currentScreen)
          {
 
-           case SCREEN_MAIN:
-        UpdateDataBMS();
+        case SCREEN_MAIN:
         targetPercent = state->soc;
         currentPercent += (targetPercent - currentPercent) * 0.1;
         int x = procentToX(currentPercent);
         updateMarker(x);
         drawProcentBat(state->soc);
-        drawTempReactor(state->temp;
+        drawTempReactor(state->temp);
         getStatMoc(state->chargeEnabled);
         getStatDisMoc(state->dischargeEnabled);
-        drawChargeAuIcon(stateChargeAu);
-        Serial.println(state->chargeEnabled));
-        Serial.println(state->dischargeEnabled);
+        drawChargeAuIcon(state->chargeEnabled);
+        
             break;
 
             case SCREEN_CHARGE:
@@ -167,11 +182,8 @@ void updateValue(){
 
 void drawMainMenu(){
      tft.fillScreen(TFT_BLACK);
-     drawBulb(dischargeStatus);
-     drawChargeAuIcon(stateChargeAu);
-     drawSettingsIcon();
-     drawChargeManualIcon();
      drawScale();
+     drawSettingsIcon();
     tft.drawLine(64, 64, 256, 64, TFT_DARKGREEN);
     tft.drawLine(74, 35, 246, 35, TFT_DARKGREEN);
     tft.drawLine(64, 95, 256, 95, TFT_DARKGREEN);
@@ -244,7 +256,7 @@ void drawSettingsIcon(){
     tft.drawBitmap(0, 175, settingsIcon, 64, 64, TFT_DARKGREEN);
 }
 
-void drawChargeManualIcon(){
+void drawChargeManualIcon(bool stateCharge){
     tft.drawBitmap(258, 175, chargeManualIcon, 64, 64, TFT_DARKGREEN);
 }
 

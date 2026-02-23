@@ -33,20 +33,19 @@ typedef struct {
     bool chargeEnabled;
 } SystemState;
 
-void UpdateDataBMS();
-const SystemState* bms_get_state();
+void logicalUpdateDataBMS();
+const SystemState* logical_get();
 
 //передача обьекта
-void chargeBegin(Daly_BMS_UART* bms);
 
 
 //инициализация зарядника
 void charger_init(void);
 
 //управление 
-void charger_enable(void);
-void charger_disable(void);
-void charger_au(void);
+void logical_charger_enable(void);
+void logical_charger_disable(void);
+void logical_toggle_auto_mode(void);
 void charger_fault(void);
 
 //логика

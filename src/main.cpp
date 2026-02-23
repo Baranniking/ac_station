@@ -22,16 +22,10 @@ void setup() {
 
  displayBegin(); 
  
- dischargeStatus = bms_get_discharge(); //передаем сотояние bms по розрядке
- delay(100);
- stateChargeAu = bms_get_charge();
- delay(100);
- activSetChargAU(bms_get_charge());
 
  touchBegin();
 
  charger_init();
- chargeBegin(&bms);    // передаём ссылку на BMS
 
 
  
@@ -42,9 +36,10 @@ void loop() {
     if(updateTouch()){
         uiProcessTouch(getLastTouch());
     } 
-    charger_logical();
-    updateScreen();
-
+    logicalUpdateDataBMS();    // 2. Копируем в systemState
+    charger_logical();         // 3. Принимаем решения
+    updateScreen();            // 4. Рисуем
+}
      
      
 

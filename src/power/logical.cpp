@@ -18,8 +18,9 @@ void charger_init(void)
     state = CHARGER_OFF;
 }
 
-void UpdateDataBMS(){
+void logicalUpdateDataBMS(){
 const DataBMS bms = bms_get_data();
+bms_manager_update();   // <-- добавить сюда
 systemState.soc = bms.batProcent;
 systemState.voltage = bms.batVolatge;
 systemState.current = bms.batCurrent;
@@ -29,7 +30,7 @@ systemState.dischargeEnabled = bms.getDischargeState;
 }
 
 
-const SystemState* bms_get_state()
+const SystemState* logical_get()
 {
     return &systemState;
 }
@@ -41,30 +42,30 @@ const SystemState* bms_get_state()
       switch(state)
     {
         case CHARGER_ON:
-        charger_enable();
+        logical_charger_enable();
         break;
 
         case CHARGER_OFF:
-        charger_disable();
+        logical_charger_disable();
         break;
 
         case CHARGER_AUTO:
-        charger_au();
+        logical_toggle_auto_mode();
         break;
 
         case CHARGER_DONE:
-        charger_disable();
+        logical_charger_disable();
         break;
         
         case CHARGER_FAULT:
-        charger_disable(); 
+        logical_charger_disable(); 
         break;        
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void charger_enable(void)
+void logical_charger_enable(void)
 {
     static const uint32_t delayTimeOnChargeBms = 5000;
     
@@ -85,7 +86,7 @@ void charger_enable(void)
     }
 }
 
-void charger_disable(void)
+void logical_charger_disable(void)
 {
     if(!activCharge) return;
     digitalWrite(CHARGER_EN_PIN, HIGH);
@@ -95,20 +96,21 @@ void charger_disable(void)
        activCharge = false;
 }
 
-void charger_au(void)
+void logical_toggle_auto_mode(void)
 {
    if(systemState.temp > MAX_TEMP){
      state = CHARGER_FAULT;
      return;
    }
-   if(state == CHARGER_OFF){
-    state = CHARGER_AUTO;
-   }else {
-    state = CHARGER_OFF;
+   if(systemState.soc <= START_CHARG){
+    logical_charger_enable();
+   }else if(systemState.soc >= 100 && systemState.current <= 5){
+    logical_charger_disable();
+    state = CHARGER_DONE;
    }
         
     }
-}
+
 
 /////
 charger_state logical_get_state(void)
