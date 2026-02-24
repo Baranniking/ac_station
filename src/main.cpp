@@ -28,52 +28,10 @@ void loop() {
     if(updateTouch()){
         uiProcessTouch(getLastTouch());
     } 
-    logicalUpdateDataBMS();    // 2. Копируем в systemState
-    charger_logical();         // 3. Принимаем решения
-    updateScreen();            // 4. Рисуем
+    logicalUpdateDataBMS();    // 1. Копируем в systemState
+    charger_logical();         // 2. Принимаем решения
+    updateScreen();            // 3. Рисуем
 }
      
      
-
-   
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    if(getCurrentScreen() == SCREEN_CHARGE){
-         if (millis() - timeUpdateDataBms >= IntervalUpdate) {
-                timeUpdateDataBms = millis();
-                bms_get_soc;
-                drawChargeValue(
-                    bms_get_bat_voltage(),
-                    bms_get_current(),
-                    bms_get_bat_voltage() * bms_get_current(),
-                    bms_get_soc()
-                );
-    }
-    }
-
-
-}
-
-
-
 

@@ -32,7 +32,7 @@ struct UIButton{
 
 
 void displayBegin();
-void uiProcessTouch(TouchPoint point);
+void uiProcessTouch(const TouchPoint& point);
 void updateScreen();
 ScreenState getCurrentScreen();
 void setCurrentScreen(ScreenState newScreen);
@@ -56,13 +56,13 @@ void drawScale();
 int procentToX(float procent);
 void updateMarker(int newX);
 
+void updateValue();
 
 void enterToChargeMenu();
 void enterToMainMenu();
 void toggleDischargeMode();
 void toggleAuChargeMode();
 
-extern bool dischargeStatus;
 extern bool stateChargeAu;
 
 #endif

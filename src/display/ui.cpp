@@ -26,14 +26,13 @@ int baseY = bottomY + 14;           // основание ниже
 int halfWidth = 7;                  // половина ширины
 
 static bool changeMenuState = false;
-static bool dischargeStatus = false;
+
 
 static ScreenState currentScreen = SCREEN_MAIN;
 static ScreenState lastScreen = SCREEN_CHARGE;
 
 const SystemState* state = logical_get();
 
-const int numButtons = sizeof(UIBtn)/sizeof(UIBtn[0]); //sizeof определяет общий размер массива и делит его на одну ячейку, тем самым определяем размер в одной ячейке
 
 void displayBegin(){
 tft.init();
@@ -43,14 +42,18 @@ tft.fillScreen(TFT_BLACK);
 
 
 static UIButton UIBtn[]{
-    {140, 120, 180, 160, SCREEN_MAIN, enterToChargeMenu, //Кнопка перехода в меню значений.
+    {140, 120, 180, 160, SCREEN_MAIN, enterToChargeMenu}, //Кнопка перехода в меню значений.
     {150, 220, 170, 250, SCREEN_CHARGE, enterToMainMenu}, //Кнопка перехода в главное меню с меню значений.
     {0, 0, 50, 50, SCREEN_MAIN, toggleDischargeMode}, //Кнопка запуская разряда.
     {280, 0, 320, 50, SCREEN_MAIN, toggleAuChargeMode} //Кнопка запуска АвтоЗаряда.
     
+
 };
 
-void uiProcessTouch(const tP point){
+const int numButtons = sizeof(UIBtn)/sizeof(UIBtn[0]); //sizeof определяет общий размер массива и делит его на одну ячейку, тем самым определяем размер в одной ячейке
+
+
+void uiProcessTouch(const TouchPoint& point){
     Serial.print(" X: "); Serial.println(point.x);
     Serial.print(" Y: "); Serial.println(point.y);
     Serial.print(" Z: "); Serial.println(point.z);
@@ -88,6 +91,15 @@ void uiProcessTouch(const tP point){
 
     void toggleAuChargeMode(){
             logical_toggle_auto_mode();
+    }
+
+    
+    void setCurrentScreen(ScreenState newScreen){
+        currentScreen = newScreen;
+    }
+
+    ScreenState getCurrentScreen(){
+        return currentScreen;
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,13 +161,14 @@ void updateScreen(){
     changeMenuState = false;
 }
 
-void updateValue(){
+void updateValue()
+{    
     if (millis() - timeUpdateDataBms >= IntervalUpdate){
          timeUpdateDataBms = millis();
          switch(currentScreen)
          {
-
         case SCREEN_MAIN:
+        {
         targetPercent = state->soc;
         currentPercent += (targetPercent - currentPercent) * 0.1;
         int x = procentToX(currentPercent);
@@ -167,8 +180,9 @@ void updateValue(){
         drawChargeAuIcon(state->chargeEnabled);
         
             break;
-
+        }
             case SCREEN_CHARGE:
+        {
         drawChargeValue(
         state->voltage,
         state->current,
@@ -176,6 +190,7 @@ void updateValue(){
         state->soc);
             break; 
          }
+    }
     }
 
 }
@@ -241,6 +256,10 @@ void drawChargeValue(float voltageValue, float currentValue, float powerValue, f
 
     tft.setCursor(200, 75);
     tft.print(powerValue, 1);
+}
+
+void drawSettingsMenu(){
+    
 }
 
 void drawBulb(bool state){

@@ -2,6 +2,7 @@
 #include <config.h>
 #include <Arduino.h>
 #include "bms_manager.h"
+
 //внутренее состояние, не видно из вне.
 static charger_state state = CHARGER_OFF;
 static bool checkResMillis = false;
@@ -18,9 +19,13 @@ void charger_init(void)
     state = CHARGER_OFF;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
+
 void logicalUpdateDataBMS(){
 const DataBMS bms = bms_get_data();
+
 bms_manager_update();   // <-- добавить сюда
+
 systemState.soc = bms.batProcent;
 systemState.voltage = bms.batVolatge;
 systemState.current = bms.batCurrent;
@@ -29,6 +34,7 @@ systemState.chargeEnabled = bms.getChargeState;
 systemState.dischargeEnabled = bms.getDischargeState;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////
 
 const SystemState* logical_get()
 {
@@ -86,6 +92,8 @@ void logical_charger_enable(void)
     }
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+
 void logical_charger_disable(void)
 {
     if(!activCharge) return;
@@ -95,6 +103,8 @@ void logical_charger_disable(void)
        checkResMillis = false;
        activCharge = false;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 
 void logical_toggle_auto_mode(void)
 {
@@ -112,24 +122,27 @@ void logical_toggle_auto_mode(void)
     }
 
 
-/////
+////////////////////////////////////////////////////////////////////////////////////////
+
 charger_state logical_get_state(void)
 {
     return state;
 }
 
-/////
+///////////////////////////////////////////////////////////////////////////////////////
+
 void logical_set_state(charger_state newState)
 {
 state = newState;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
 
 void activSetChargAU(bool state){
     activCharge = state;
 }
 
-
+///////////////////////////////////////////////////////////////////////////////////////
 
 
 
